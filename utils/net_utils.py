@@ -235,7 +235,7 @@ def constrainScoreByADMM(model, v_meter, max_score_meter):
             if not m.prune:
                 continue
             s = admm_solve(m.scores, N, M)
-            m.scores = s
+            m.scores.data = s
     for n, m in model.named_modules():
         if hasattr(m, "scores"):
             if m.prune:
