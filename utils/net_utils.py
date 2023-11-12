@@ -193,10 +193,18 @@ def maskNxM(
 
     return mask
 
+def flatten_and_reshape(z, M):
+    """
+    Flatten z and reshape it into a 2D tensor with columns divisible by M.
+    """
+    num_elements = z.numel()
+    num_rows = num_elements // M
+    return z.flatten()[:num_rows * M].view(num_rows, M)
+
 def admm_solve(z, N, M, rho=1.0, max_iter=1000, tol=1e-4):
     # Flatten z into a vector
-    z = z.view(-1)
-    n = z.size(0)
+    z_flattened = flatten_and_reshape(z, M)
+    n, m = z_flattened.shape
     s = torch.zeros_like(z)
     W = torch.zeros_like(z)
     u = torch.zeros_like(z)
