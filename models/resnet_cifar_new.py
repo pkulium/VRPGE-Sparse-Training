@@ -74,4 +74,4 @@ def resnet20():
 
 def resnet32():
     num_classes = 10 if parser_args.set == "CIFAR10" else 100
-    return ResNet(BasicBlock, [5, 5, 5], num_classes)
+    return ResNet(BasicBlock, [1, 1, 1], num_classes)

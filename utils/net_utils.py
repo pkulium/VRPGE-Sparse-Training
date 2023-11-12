@@ -5,6 +5,10 @@ import math
 import torch
 import torch.nn as nn
 from args import args as parser_args
+from typing import Union, Dict, Tuple
+import numpy as np
+TensorType = Union[torch.Tensor, np.ndarray]
+N, M = 2, 4
 
 def save_checkpoint(state, is_best, filename="checkpoint.pth", save=False, finetune=False):
     filename = pathlib.Path(filename)
@@ -156,3 +160,76 @@ def constrainScoreByWhole(model, v_meter, max_score_meter):
         if hasattr(m, "scores"):
             if m.prune:
                 m.scores.sub_(v).clamp_(0, 1)
+
+def maskNxM(
+    parameter: TensorType,
+    n: int,
+    m: int
+) -> TensorType:
+    """
+    Accepts either a torch.Tensor or numpy.ndarray and generates a floating point mask of 1's and 0's
+    corresponding to the locations that should be retained for NxM pruning. The appropriate ranking mechanism
+    should already be built into the parameter when this method is called.
+    """
+
+    if type(parameter) is torch.Tensor:
+        out_neurons, in_neurons = parameter.size()
+
+        with torch.no_grad():
+            groups = parameter.reshape(out_neurons, -1, n)
+            zeros = torch.zeros(1, 1, 1, device=parameter.device)
+            ones = torch.ones(1, 1, 1, device=parameter.device)
+
+            percentile = m / n
+            quantiles = torch.quantile(groups, percentile, -1, keepdim=True)
+            mask = torch.where(groups > quantiles, ones, zeros).reshape(out_neurons, in_neurons)
+    else:
+        out_neurons, in_neurons = parameter.shape
+        percentile = (100 * m) / n
+
+        groups = parameter.reshape(out_neurons, -1, n)
+        group_thresholds = np.percentile(groups, percentile, axis=-1, keepdims=True)
+        mask = (groups > group_thresholds).astype(np.float32).reshape(out_neurons, in_neurons)
+
+    return mask
+
+def admm_solve(z, N, M, rho=1.0, max_iter=1000, tol=1e-4):
+    n = z.size(0)
+    s = torch.zeros_like(z)
+    W = torch.zeros_like(z)
+    u = torch.zeros_like(z)
+
+    for _ in range(max_iter):
+        # Update s
+        s = (z + rho * (W - u)) / (1 + rho)
+
+        # Update W
+        W_new = s + u
+        scores = W_new.abs()
+        mask = maskNxM(scores, N, M)
+        W_new = mask * scores
+
+        # Update u
+        u += s - W
+
+        # Check for convergence
+        primal_res = torch.norm(s - W)
+        dual_res = torch.norm(-rho * (W - W_new))
+
+        if primal_res < tol and dual_res < tol:
+            break
+
+    return s
+
+def constrainScoreByADMM(model, v_meter, max_score_meter):
+    total = 0
+    for n, m in model.named_modules():
+        if hasattr(m, "scores"):
+            if not m.prune:
+                continue
+            s = admm_solve(m.scores, N, M)
+            m.scores = s
+    for n, m in model.named_modules():
+        if hasattr(m, "scores"):
+            if m.prune:
+                m.scores.clamp_(0, 1)

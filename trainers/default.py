@@ -2,7 +2,7 @@ import torch
 import tqdm
 from utils.eval_utils import accuracy
 from utils.logging import AverageMeter, ProgressMeter
-from utils.net_utils import constrainScoreByWhole
+from utils.net_utils import constrainScoreByWhole, constrainScoreByADMM
 from torch.utils.tensorboard import SummaryWriter
 writer = SummaryWriter()
 __all__ = ["train", "validate", "modifier"]
@@ -68,7 +68,8 @@ def train(train_loader, model, criterion, optimizer, epoch, args, writer, weight
         if args.conv_type == "VRPGE":
             if not args.finetuning:
                 with torch.no_grad():
-                    constrainScoreByWhole(model, v_meter, max_score_meter)
+                    # constrainScoreByWhole(model, v_meter, max_score_meter)
+                    constrainScoreByADMM(model, v_meter, max_score_meter)
         if i % args.print_freq == 0:
             progress.display(i)
     progress.display(len(train_loader))

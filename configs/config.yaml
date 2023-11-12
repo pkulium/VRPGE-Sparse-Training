@@ -13,7 +13,7 @@ lr_policy: cosine_lr
 # ===== Network training config ===== #
 epochs: 10
 weight_decay: 0
-batch_size: 256
+batch_size: 64
 
 # ===== Sparsity =========== #
 conv_type: VRPGE
