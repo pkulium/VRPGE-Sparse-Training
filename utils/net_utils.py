@@ -202,7 +202,7 @@ def flatten_and_reshape(z, M):
     num_rows = num_elements // M
     return z.flatten()[:num_rows * M].view(num_rows, M)
 
-def admm_solve(z, N, M, rho=1.0, max_iter=1000, tol=1e-4):
+def admm_solve(z, N, M, rho=0.1, max_iter=1000, tol=1e-4):
     z_flattened = flatten_and_reshape(z, M)
     if DEBUG:
         print(f'z_flattened:{z_flattened}')
@@ -214,7 +214,7 @@ def admm_solve(z, N, M, rho=1.0, max_iter=1000, tol=1e-4):
     for _ in range(max_iter):
         # Update s
         s = (z_flattened + rho * (W - u)) / (1 + rho)
-        
+
         # Update W
         W_new = s + u
         W = maskNxM(W_new, M, N)
