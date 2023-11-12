@@ -194,6 +194,8 @@ def maskNxM(
     return mask
 
 def admm_solve(z, N, M, rho=1.0, max_iter=1000, tol=1e-4):
+    # Flatten z into a vector
+    z = z.view(-1)
     n = z.size(0)
     s = torch.zeros_like(z)
     W = torch.zeros_like(z)
