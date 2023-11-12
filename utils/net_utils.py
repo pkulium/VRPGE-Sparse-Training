@@ -10,6 +10,7 @@ import numpy as np
 TensorType = Union[torch.Tensor, np.ndarray]
 N, M = 2, 4
 
+DEBUG = True
 def save_checkpoint(state, is_best, filename="checkpoint.pth", save=False, finetune=False):
     filename = pathlib.Path(filename)
     if not filename.parent.exists():
@@ -203,6 +204,8 @@ def flatten_and_reshape(z, M):
 
 def admm_solve(z, N, M, rho=1.0, max_iter=1000, tol=1e-4):
     z_flattened = flatten_and_reshape(z, M)
+    if DEBUG:
+        print(f'z_flattened:{z_flattened}')
     n, m = z_flattened.shape
     s = torch.zeros_like(z_flattened)
     W = torch.zeros_like(z_flattened)
@@ -225,7 +228,8 @@ def admm_solve(z, N, M, rho=1.0, max_iter=1000, tol=1e-4):
 
         if primal_res < tol and dual_res < tol:
             break
-
+    if DEBUG:
+        print(f's:{s}')
     return s.view_as(z)
 
 def constrainScoreByADMM(model, v_meter, max_score_meter):
