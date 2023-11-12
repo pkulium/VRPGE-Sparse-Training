@@ -214,7 +214,7 @@ def admm_solve(z, N, M, rho=1.0, max_iter=1000, tol=1e-4):
 
         # Update W
         W_new = s + u
-        W = maskNxM(W_new, N, M)
+        W = maskNxM(W_new, M, N)
 
         # Update u
         u += s - W
