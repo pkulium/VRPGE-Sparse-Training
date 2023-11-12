@@ -230,6 +230,8 @@ def admm_solve(z, N, M, rho=0.01, max_iter=1000, tol=1e-4):
             break
     if DEBUG:
         print(f's:{s}')
+        print(f'primal_res:{primal_res}')
+        print(f'dual_res:{dual_res}')
     return s.view_as(z)
 
 def constrainScoreByADMM(model, v_meter, max_score_meter):
