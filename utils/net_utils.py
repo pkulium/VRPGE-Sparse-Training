@@ -202,22 +202,19 @@ def flatten_and_reshape(z, M):
     return z.flatten()[:num_rows * M].view(num_rows, M)
 
 def admm_solve(z, N, M, rho=1.0, max_iter=1000, tol=1e-4):
-    # Flatten z into a vector
     z_flattened = flatten_and_reshape(z, M)
     n, m = z_flattened.shape
-    s = torch.zeros_like(z)
-    W = torch.zeros_like(z)
-    u = torch.zeros_like(z)
+    s = torch.zeros_like(z_flattened)
+    W = torch.zeros_like(z_flattened)
+    u = torch.zeros_like(z_flattened)
 
     for _ in range(max_iter):
         # Update s
-        s = (z + rho * (W - u)) / (1 + rho)
+        s = (z_flattened + rho * (W - u)) / (1 + rho)
 
         # Update W
         W_new = s + u
-        scores = W_new.abs()
-        mask = maskNxM(scores, N, M)
-        W_new = mask * scores
+        W = maskNxM(W_new, N, M)
 
         # Update u
         u += s - W
@@ -229,7 +226,7 @@ def admm_solve(z, N, M, rho=1.0, max_iter=1000, tol=1e-4):
         if primal_res < tol and dual_res < tol:
             break
 
-    return s
+    return s.view_as(z)
 
 def constrainScoreByADMM(model, v_meter, max_score_meter):
     total = 0
