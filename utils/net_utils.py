@@ -244,6 +244,7 @@ def get_n_m_sparse_matrix(w):
         mask = torch.ones(w_tmp.shape, device=w_tmp.device)
         mask = mask.scatter_(dim=1, index=index, value=0).reshape(w.t().shape).t()
     if DEBUG:
+        print(f'w:{w}')
         print(f'mask:{mask}')
     return mask
 
