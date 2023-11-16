@@ -277,7 +277,7 @@ def admm_solve(z, N, M, rho=1, max_iter=1000, tol=1e-4):
         print(f's:{s}')
         print(f'primal_res:{primal_res}')
         print(f'dual_res:{dual_res}')
-    return s.view_as(z)
+    return W.view_as(z)
 
 def constrainScoreByADMM(model, v_meter, max_score_meter):
     total = 0
