@@ -208,7 +208,7 @@ def maskNxM(
                     tie_indices_list = tie_indices.nonzero(as_tuple=False).reshape(-1).tolist()
 
                     # Check if the shortfall is not greater than the number of available indices
-                    shortfall = min(shortfall, len(tie_indices_list))
+                    # shortfall = min(shortfall, len(tie_indices_list))
 
                     # Randomly select indices to fill the shortfall
                     selected_indices = random.sample(tie_indices_list, shortfall)
