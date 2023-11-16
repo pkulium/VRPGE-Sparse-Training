@@ -246,7 +246,9 @@ def admm_solve(z, N, M, rho=1.0, max_iter=1000, tol=1e-4):
 
         # Update W
         W_new = s + u
-        W = maskNxM(W_new, M, N)
+        scores = W_new.abs()
+        mask = maskNxM(scores, M, N)
+        W = mask * W_new
 
         # Update u
         u += s - W
