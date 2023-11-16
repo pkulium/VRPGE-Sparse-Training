@@ -211,7 +211,7 @@ def maskNxM(
 
             # Now combine the random tie-breaking with the original mask
             original_mask = torch.where(groups > quantiles, ones, zeros).reshape(out_neurons, in_neurons)
-            final_mask = mask.reshape(out_neurons, in_neurons) | original_mask
+            final_mask = torch.logical_or(mask.reshape(out_neurons, in_neurons), original_mask)
             mask = final_mask
     else:
         out_neurons, in_neurons = parameter.shape
