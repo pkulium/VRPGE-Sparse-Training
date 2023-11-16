@@ -15,7 +15,12 @@ class VRPGE(nn.Conv2d):
         if parser_args.score_init_constant is not None:
             self.scores.data = (
                     torch.ones_like(self.scores) * parser_args.score_init_constant
-            )
+            ) 
+            noise_scale = 0.01
+            noise = torch.randn_like(self.scores.data) * noise_scale
+
+            # Add the noise to self.scores.data
+            self.scores.data += noise
         else:
             nn.init.kaiming_uniform_(self.scores, a=math.sqrt(5))
         if self.out_channels == 10 or self.out_channels == 100:
