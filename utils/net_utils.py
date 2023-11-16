@@ -253,7 +253,7 @@ def admm_solve(z, N, M, rho=1.0, max_iter=1000, tol=1e-4):
     z_flattened = z
     if DEBUG:
         print(f'z_flattened:{z_flattened}')
-    n, m = z_flattened.shape
+    # n, m = z_flattened.shape
     s = torch.zeros_like(z_flattened)
     W = torch.zeros_like(z_flattened)
     u = torch.zeros_like(z_flattened)
