@@ -22,7 +22,7 @@ init: kaiming_normal
 mode: fan_in
 nonlinearity: relu
 prune_rate: 0.5
-# score_init_constant: 0.5
+score_init_constant: 0.5
 K: 2
 
 # ===== Hardware setup ===== #
