@@ -243,6 +243,8 @@ def get_n_m_sparse_matrix(w):
         index = torch.argsort(w_tmp, dim=1)[:, :int(M - N)]
         mask = torch.ones(w_tmp.shape, device=w_tmp.device)
         mask = mask.scatter_(dim=1, index=index, value=0).reshape(w.t().shape).t()
+    if DEBUG:
+        print(f'mask:{mask}')
     return mask
 
 def admm_solve(z, N, M, rho=1.0, max_iter=1000, tol=1e-4):
