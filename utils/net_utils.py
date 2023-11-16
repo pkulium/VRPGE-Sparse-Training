@@ -184,35 +184,32 @@ def maskNxM(
         #     percentile = m / n
         #     quantiles = torch.quantile(groups, percentile, -1, keepdim=True)
         #     mask = torch.where(groups > quantiles, ones, zeros).reshape(out_neurons, in_neurons)
-        # import torch
-
-        # Assuming these variables are defined: out_neurons, in_neurons, n, m, parameter
         with torch.no_grad():
             groups = parameter.reshape(out_neurons, -1, n)
-            zeros = torch.zeros(1, 1, 1, device=parameter.device)
-            ones = torch.ones(1, 1, 1, device=parameter.device)
+            zeros = torch.zeros_like(groups)
+            ones = torch.ones_like(groups)
 
             percentile = m / n
             quantiles = torch.quantile(groups, percentile, -1, keepdim=True)
+            initial_mask = torch.where(groups > quantiles, ones, zeros)
 
-            # Determine where the ties are
-            ties = torch.eq(groups, quantiles)
+            # Count ones in each group
+            ones_count = initial_mask.sum(dim=-1)
 
-            # Calculate how many ones should be in the mask
-            num_ones = int(percentile * ties.size(-1))
+            for i in range(out_neurons):
+                shortfall = m - ones_count[i].item()
+                if shortfall > 0:
+                    # Find indices where the group is equal to the quantile and currently zero in the mask
+                    tie_indices = (groups[i] == quantiles[i]) & (initial_mask[i] == 0)
+                    tie_indices_list = tie_indices.nonzero(as_tuple=False).view(-1).tolist()
 
-            # Randomly break ties: For each group, shuffle the tie indices and select num_ones
-            mask = torch.zeros_like(groups)
-            for i in range(groups.size(0)):
-                for j in range(groups.size(1)):
-                    tie_indices = ties[i, j].nonzero(as_tuple=False).view(-1)
-                    selected_indices = tie_indices[torch.randperm(tie_indices.numel())[:num_ones]]
-                    mask[i, j, selected_indices] = 1
+                    # Randomly select indices to fill the shortfall
+                    selected_indices = random.sample(tie_indices_list, shortfall)
+                    for idx in selected_indices:
+                        initial_mask[i, idx] = 1
 
-            # Now combine the random tie-breaking with the original mask
-            original_mask = torch.where(groups > quantiles, ones, zeros).reshape(out_neurons, in_neurons)
-            final_mask = torch.logical_or(mask.reshape(out_neurons, in_neurons), original_mask)
-            mask = final_mask
+            # Reshape the mask back to original dimensions
+            mask = initial_mask.reshape(out_neurons, in_neurons)
     else:
         out_neurons, in_neurons = parameter.shape
         percentile = (100 * m) / n
