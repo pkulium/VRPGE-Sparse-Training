@@ -195,7 +195,7 @@ def maskNxM(
 
             percentile = m / n
             quantiles = torch.quantile(groups, percentile, -1, keepdim=True)
-            initial_mask = torch.where(groups > quantiles, ones, zeros)
+            initial_mask = torch.where(groups > quantiles, ones, zeros).reshape(out_neurons, in_neurons)
 
             # Count ones in each group
             ones_count = initial_mask.sum(dim=-1)
