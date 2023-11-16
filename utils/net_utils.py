@@ -235,6 +235,16 @@ def flatten_and_reshape(z, M):
     num_rows = num_elements // M
     return z.flatten()[:num_rows * M].view(num_rows, M)
 
+def get_n_m_sparse_matrix(w):
+    with torch.no_grad:
+        length = w.numel()
+        group = int(length / M)
+        w_tmp = w.t().detach().abs().reshape(group, M)
+        index = torch.argsort(w_tmp, dim=1)[:, :int(M - N)]
+        mask = torch.ones(w_tmp.shape, device=w_tmp.device)
+        mask = mask.scatter_(dim=1, index=index, value=0).reshape(w.t().shape).t()
+    return mask
+
 def admm_solve(z, N, M, rho=1.0, max_iter=1000, tol=1e-4):
     z_flattened = flatten_and_reshape(z, M)
     if DEBUG:
@@ -251,7 +261,7 @@ def admm_solve(z, N, M, rho=1.0, max_iter=1000, tol=1e-4):
         # Update W
         W_new = s + u
         scores = W_new.abs()
-        mask = maskNxM(scores, M, N)
+        mask = get_n_m_sparse_matrix(scores)
         W = mask * W_new
 
         # Update u
