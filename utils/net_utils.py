@@ -7,6 +7,8 @@ import torch.nn as nn
 from args import args as parser_args
 from typing import Union, Dict, Tuple
 import numpy as np
+import random
+
 TensorType = Union[torch.Tensor, np.ndarray]
 N, M = 2, 4
 
