@@ -186,8 +186,6 @@ def maskNxM(
         #     percentile = m / n
         #     quantiles = torch.quantile(groups, percentile, -1, keepdim=True)
         #     mask = torch.where(groups > quantiles, ones, zeros).reshape(out_neurons, in_neurons)
-        import torch
-        import random
 
         with torch.no_grad():
             groups = parameter.reshape(out_neurons, -1, n)
