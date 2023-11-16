@@ -203,7 +203,7 @@ def maskNxM(
                 if shortfall > 0:
                     # Find indices where the group is equal to the quantile and currently zero in the mask
                     tie_indices = (groups[i] == quantiles[i]) & (initial_mask[i] == 0)
-                    tie_indices_list = tie_indices.nonzero(as_tuple=False).view(-1).tolist()
+                    tie_indices_list = tie_indices.nonzero(as_tuple=False).reshape(-1).tolist()
 
                     # Randomly select indices to fill the shortfall
                     selected_indices = random.sample(tie_indices_list, shortfall)
