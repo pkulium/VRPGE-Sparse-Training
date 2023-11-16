@@ -236,7 +236,7 @@ def flatten_and_reshape(z, M):
     return z.flatten()[:num_rows * M].view(num_rows, M)
 
 def get_n_m_sparse_matrix(w):
-    with torch.no_grad:
+    with torch.no_grad():
         length = w.numel()
         group = int(length / M)
         w_tmp = w.t().detach().abs().reshape(group, M)
