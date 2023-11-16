@@ -212,10 +212,7 @@ def maskNxM(
 
                     # Randomly select indices to fill the shortfall
                     selected_indices = random.sample(tie_indices_list, shortfall)
-                    for idx in selected_indices:
-                        # Ensure idx is within the valid range for the second dimension
-                        if idx < initial_mask.shape[1]:
-                            initial_mask[i, idx] = 1
+                    initial_mask[i, selected_indices] = 1
 
             # Reshape the mask back to original dimensions
             mask = initial_mask
