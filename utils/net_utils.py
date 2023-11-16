@@ -186,6 +186,9 @@ def maskNxM(
         #     percentile = m / n
         #     quantiles = torch.quantile(groups, percentile, -1, keepdim=True)
         #     mask = torch.where(groups > quantiles, ones, zeros).reshape(out_neurons, in_neurons)
+        import torch
+        import random
+
         with torch.no_grad():
             groups = parameter.reshape(out_neurons, -1, n)
             zeros = torch.zeros_like(groups)
@@ -199,11 +202,14 @@ def maskNxM(
             ones_count = initial_mask.sum(dim=-1)
 
             for i in range(out_neurons):
-                shortfall = m - ones_count[i].item()
+                shortfall = m - int(ones_count[i].item())  # Convert to int
                 if shortfall > 0:
                     # Find indices where the group is equal to the quantile and currently zero in the mask
                     tie_indices = (groups[i] == quantiles[i]) & (initial_mask[i] == 0)
                     tie_indices_list = tie_indices.nonzero(as_tuple=False).reshape(-1).tolist()
+
+                    # Check if the shortfall is not greater than the number of available indices
+                    shortfall = min(shortfall, len(tie_indices_list))
 
                     # Randomly select indices to fill the shortfall
                     selected_indices = random.sample(tie_indices_list, shortfall)
@@ -212,6 +218,7 @@ def maskNxM(
 
             # Reshape the mask back to original dimensions
             mask = initial_mask.reshape(out_neurons, in_neurons)
+
     else:
         out_neurons, in_neurons = parameter.shape
         percentile = (100 * m) / n
